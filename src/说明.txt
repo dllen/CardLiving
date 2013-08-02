@@ -1,0 +1,41 @@
+架构说明：
+	com.webin.action包，类继承BaseAction, 继承后request = getRequest()获取,response = getResponse().注解设置为原型
+	com.webin.bean，创建实体类，编写hibernate.xml配置文件
+	com.webin.core,一般不用，留着
+	com.webin.core.pull,接收的消息基本类
+	com.webin.core.push,推送消息基本类
+	com.webin.dao
+	com.webin.dao.impl  类继承BaseDao,通过hibernateTemplet访问数据库,设置为singeton
+	com.webin.service
+	com.webin.service.impl 类继承BaseService,设置为singeton
+	com.webin.util 工具包
+			Parameters 一些常用的参数
+			Util 工具包
+	注意修改配置文件，数据库用户名密码
+			
+代码编写说明
+	1.直接从com.webin.service里的MessageHandler开始编码，96行的menu参数就是用户输入的消息，根据消息进行相应处理，返回MessagePush类
+	2.发送文本信息格式
+		TextMessagePush vMsgPush = new TextMessagePush(vMsgPull);
+		vMsgPush.setContent("");
+		return vMsgPush;
+	3.发送图文信息格式
+		参考
+		ImgTextMessagePush imgMessagePush = new ImgTextMessagePush(vMsgPull);
+		List<ImageTextMessage> imgMessages = new ArrayList<ImageTextMessage>();//从数据库中获取
+		//最多获取十条优惠
+		List<Product> products = productDao.getNewProduct(j);
+		for(int i=0;i<products.size();i++){
+			ImageTextMessage msg = new ImageTextMessage();
+			Product product = products.get(i);
+			msg.setTitle(product.getTitle());
+			msg.setUrl(Parameters.SERVERIP+"GetDetail?id="+product.getProductId());
+			msg.setPicUrl(Parameters.SERVERIP+product.getImageAddress());
+			msg.setDescription(product.getDetail());
+			imgMessages.add(msg);
+		}
+		for(int i=0;i<imgMessages.size();i++){
+			imgMessagePush.setImgTextMessage(imgMessages.get(i));
+		}
+		imgMessagePush.setFuncFlag("0");//这句必须有
+		return imgMessagePush;
